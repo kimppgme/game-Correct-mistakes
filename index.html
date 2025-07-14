@@ -2,114 +2,138 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>เกมจับผิดคำ</title>
+  <title>เกมแก้คำผิด</title>
   <style>
     body {
-      font-family: Tahoma, sans-serif;
-      background-color: #f0f8ff;
+      font-family: 'Kanit', sans-serif;
+      background-color: #f0f0f0;
+      text-align: center;
       padding: 30px;
-      max-width: 600px;
-      margin: auto;
     }
-    h2 { color: #333366; }
-    input, button {
-      font-size: 16px;
+    .container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+      width: 500px;
+    }
+    h1 {
+      color: #333;
+    }
+    #sentence {
+      font-size: 20px;
+      margin: 20px 0;
+    }
+    input {
+      font-size: 18px;
       padding: 8px;
+      width: 80%;
+    }
+    #timer {
+      font-size: 24px;
+      color: #e74c3c;
       margin-top: 10px;
     }
-    #result {
-      font-weight: bold;
-      margin-top: 10px;
-    }
-    #scoreBoard {
+    #score {
       margin-top: 20px;
       font-size: 18px;
-      color: #006600;
     }
   </style>
 </head>
 <body>
-
-  <h2>🎯 เกมจับผิดคำ</h2>
-  <p id="sentence">...</p>
-
-  <label>📝 คำที่เขียนผิด:</label><br>
-  <input type="text" id="answerInput">
-  <button onclick="checkAnswer()">ตรวจคำตอบ</button>
-  <button onclick="nextQuestion()">➡️ ข้อต่อไป</button>
-
-  <p id="result"></p>
-  <div id="scoreBoard">คะแนน: 0 / 0</div>
+  <div class="container">
+    <h1>เกมแก้คำผิด</h1>
+    <div id="level"></div>
+    <div id="sentence"></div>
+    <input type="text" id="answer" placeholder="พิมพ์คำที่ถูกต้องที่นี่..." onkeydown="if(event.key==='Enter') checkAnswer()">
+    <div id="timer">เวลา: 30</div>
+    <div id="score">คะแนน: 0</div>
+  </div>
 
   <script>
     const questions = [
-      { sentence: "ฉันชอบไปเที่ยวทะเลกับเพือนในวันหยุด", wrong: "เพือน" },
-      { sentence: "เมื่อเช้าฝนตกทำให้ถนนลืนมาก", wrong: "ลืน" },
-      { sentence: "เขากำลังอานหนังสือเล่มโปรดอยู่", wrong: "อาน" },
-      { sentence: "แม่ซื้อส้มตำจากร้านไกล้บ้าน", wrong: "ไกล้" },
-      { sentence: "พ่อซื้อโทรทัศใหม่เมื่อวาน", wrong: "โทรทัศ" },
-      { sentence: "พวกเราไปเทียวเชียงใหม่หน้าหนาว", wrong: "เทียว" },
-      { sentence: "ครูให้นักเรียนทำแบบทดสอบในห้องเรยน", wrong: "เรยน" }
+      // ง่าย
+      { sentence: "ฉันไปโรงเรีนทุกวัน", correct: "โรงเรียน", level: "ง่าย" },
+      { sentence: "เขากินขาวเช้า", correct: "ข้าว", level: "ง่าย" },
+      { sentence: "แมวกระดดขึ้นโต๊ะ", correct: "กระโดด", level: "ง่าย" },
+      { sentence: "ฉันชอบอ่านนังสือ", correct: "หนังสือ", level: "ง่าย" },
+      { sentence: "เพื่อนฉันอยูบ้น", correct: "บ้าน", level: "ง่าย" },
+      { sentence: "พ่อขับรรถไปทำงาน", correct: "รถ", level: "ง่าย" },
+      { sentence: "แม่ซือผลไม้", correct: "ซื้อ", level: "ง่าย" },
+      { sentence: "วันนี้ฝนตกหนก", correct: "หนัก", level: "ง่าย" },
+      { sentence: "เขานั่งเก้าอี้ไหม่", correct: "ใหม่", level: "ง่าย" },
+      { sentence: "ฉันวิ่งไปรงเรียน", correct: "โรงเรียน", level: "ง่าย" },
+
+      // ปานกลาง
+      { sentence: "เขาพุดถืงเรื่องนั้น", correct: "พูดถึง", level: "ปานกลาง" },
+      { sentence: "ฉันรู่สึกดี", correct: "รู้สึก", level: "ปานกลาง" },
+      { sentence: "พวกเขายิ้มเเละหัวรอ", correct: "หัวเราะ", level: "ปานกลาง" },
+      { sentence: "เธอทำหายเมือวาน", correct: "เมื่อวาน", level: "ปานกลาง" },
+      { sentence: "นักเรียนทำข้อสอบผิดพาด", correct: "พลาด", level: "ปานกลาง" },
+      { sentence: "เขาชอบท่องเทียว", correct: "ท่องเที่ยว", level: "ปานกลาง" },
+      { sentence: "แม่ซักเสือผ้า", correct: "เสื้อผ้า", level: "ปานกลาง" },
+      { sentence: "เพือนบ้านใจดี", correct: "เพื่อน", level: "ปานกลาง" },
+      { sentence: "หมาสายพันธุดี", correct: "พันธุ์", level: "ปานกลาง" },
+      { sentence: "เด็กๆกำลังเล่นอยุ่", correct: "อยู่", level: "ปานกลาง" },
+
+      // ยาก
+      { sentence: "เพระะฉนั้นเราจึงไป", correct: "เพราะฉะนั้น", level: "ยาก" },
+      { sentence: "ผมมีคสามสามรถพิเศษ", correct: "ความสามารถ", level: "ยาก" },
+      { sentence: "เธอมีความมั่นใจในตัวเองสงู", correct: "สูง", level: "ยาก" },
+      { sentence: "การสือสารเป็นเรื่องสำคัญ", correct: "สื่อสาร", level: "ยาก" },
+      { sentence: "เราต้องตั้งจิตใจก่อนสอบ", correct: "ก่อน", level: "ยาก" },
+      { sentence: "พ่อพูดจาสุภาพแลสุภาพ", correct: "และ", level: "ยาก" },
+      { sentence: "เด็กชายมีนิสัยสุภาพเรียบรอย", correct: "เรียบร้อย", level: "ยาก" },
+      { sentence: "บ้านของเขาอยุ่ไกล", correct: "อยู่", level: "ยาก" },
+      { sentence: "เธอกำลังอธิบายอยางละเอียด", correct: "อย่าง", level: "ยาก" },
+      { sentence: "แม่ทำอาหารได้อร่อยจิงๆ", correct: "จริงๆ", level: "ยาก" }
     ];
 
-    let remainingQuestions = [...questions]; // ทำสำเนาไว้สุ่มไม่ซ้ำ
-    let currentQuestion = null;
+    let current = 0;
     let score = 0;
-    let total = 0;
+    let timer = 30;
+    let interval;
 
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-    }
-
-    function getRandomQuestion() {
-      if (remainingQuestions.length === 0) return null;
-      const question = remainingQuestions.pop();
-      return question;
-    }
-
-    function showQuestion() {
-      currentQuestion = getRandomQuestion();
-      if (!currentQuestion) {
-        document.getElementById("sentence").textContent = "🎉 คุณเล่นครบทุกข้อแล้ว!";
-        document.getElementById("result").textContent = `✅ คะแนนรวมของคุณคือ ${score} / ${total}`;
-        document.getElementById("answerInput").disabled = true;
+    function startQuestion() {
+      if (current >= questions.length) {
+        document.getElementById("sentence").textContent = "จบเกมแล้ว! ได้คะแนน: " + score + "/" + questions.length;
+        clearInterval(interval);
         return;
       }
-      document.getElementById("sentence").textContent = "ประโยค: " + currentQuestion.sentence;
-      document.getElementById("answerInput").value = "";
-      document.getElementById("result").textContent = "";
-      updateScoreBoard();
+
+      const q = questions[current];
+      document.getElementById("sentence").textContent = q.sentence;
+      document.getElementById("level").textContent = "ระดับ: " + q.level;
+      document.getElementById("answer").value = "";
+      document.getElementById("answer").focus();
+      timer = 30;
+      document.getElementById("timer").textContent = "เวลา: " + timer;
+
+      clearInterval(interval);
+      interval = setInterval(() => {
+        timer--;
+        document.getElementById("timer").textContent = "เวลา: " + timer;
+        if (timer === 0) {
+          current++;
+          startQuestion();
+        }
+      }, 1000);
     }
 
     function checkAnswer() {
-      const user = document.getElementById("answerInput").value.trim();
-      total++;
-      if (user === currentQuestion.wrong) {
+      const userAnswer = document.getElementById("answer").value.trim();
+      if (userAnswer === questions[current].correct) {
         score++;
-        document.getElementById("result").textContent = "✅ ถูกต้อง!";
-        document.getElementById("result").style.color = "green";
-      } else {
-        document.getElementById("result").textContent = `❌ คำที่ผิดคือ "${currentQuestion.wrong}"`;
-        document.getElementById("result").style.color = "red";
+        document.getElementById("score").textContent = "คะแนน: " + score;
       }
-      updateScoreBoard();
+      current++;
+      startQuestion();
     }
 
-    function updateScoreBoard() {
-      document.getElementById("scoreBoard").textContent = `คะแนน: ${score} / ${total}`;
-    }
-
-    function nextQuestion() {
-      showQuestion();
-    }
-
-    // เริ่มต้น: สุ่มลำดับคำถามก่อนเล่น
-    shuffleArray(remainingQuestions);
-    showQuestion();
+    window.onload = () => {
+      startQuestion();
+    };
   </script>
-
 </body>
 </html>
