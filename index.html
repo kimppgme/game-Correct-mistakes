@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>เกมจับผิดคำ</title>
+  <style>
+    body {
+      font-family: Tahoma, sans-serif;
+      background-color: #f0f8ff;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h2 { color: #333366; }
+    input, button {
+      font-size: 16px;
+      padding: 8px;
+      margin-top: 10px;
+    }
+    #result {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    #scoreBoard {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #006600;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🎯 เกมจับผิดคำ</h2>
+  <p id="sentence">...</p>
+
+  <label>📝 คำที่เขียนผิด:</label><br>
+  <input type="text" id="answerInput">
+  <button onclick="checkAnswer()">ตรวจคำตอบ</button>
+  <button onclick="nextQuestion()">➡️ ข้อต่อไป</button>
+
+  <p id="result"></p>
+  <div id="scoreBoard">คะแนน: 0 / 0</div>
+
+  <script>
+    const questions = [
+      { sentence: "ฉันชอบไปเที่ยวทะเลกับเพือนในวันหยุด", wrong: "เพือน" },
+      { sentence: "เมื่อเช้าฝนตกทำให้ถนนลืนมาก", wrong: "ลืน" },
+      { sentence: "เขากำลังอานหนังสือเล่มโปรดอยู่", wrong: "อาน" },
+      { sentence: "แม่ซื้อส้มตำจากร้านไกล้บ้าน", wrong: "ไกล้" },
+      { sentence: "พ่อซื้อโทรทัศใหม่เมื่อวาน", wrong: "โทรทัศ" },
+      { sentence: "พวกเราไปเทียวเชียงใหม่หน้าหนาว", wrong: "เทียว" },
+      { sentence: "ครูให้นักเรียนทำแบบทดสอบในห้องเรยน", wrong: "เรยน" }
+    ];
+
+    let remainingQuestions = [...questions]; // ทำสำเนาไว้สุ่มไม่ซ้ำ
+    let currentQuestion = null;
+    let score = 0;
+    let total = 0;
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function getRandomQuestion() {
+      if (remainingQuestions.length === 0) return null;
+      const question = remainingQuestions.pop();
+      return question;
+    }
+
+    function showQuestion() {
+      currentQuestion = getRandomQuestion();
+      if (!currentQuestion) {
+        document.getElementById("sentence").textContent = "🎉 คุณเล่นครบทุกข้อแล้ว!";
+        document.getElementById("result").textContent = `✅ คะแนนรวมของคุณคือ ${score} / ${total}`;
+        document.getElementById("answerInput").disabled = true;
+        return;
+      }
+      document.getElementById("sentence").textContent = "ประโยค: " + currentQuestion.sentence;
+      document.getElementById("answerInput").value = "";
+      document.getElementById("result").textContent = "";
+      updateScoreBoard();
+    }
+
+    function checkAnswer() {
+      const user = document.getElementById("answerInput").value.trim();
+      total++;
+      if (user === currentQuestion.wrong) {
+        score++;
+        document.getElementById("result").textContent = "✅ ถูกต้อง!";
+        document.getElementById("result").style.color = "green";
+      } else {
+        document.getElementById("result").textContent = `❌ คำที่ผิดคือ "${currentQuestion.wrong}"`;
+        document.getElementById("result").style.color = "red";
+      }
+      updateScoreBoard();
+    }
+
+    function updateScoreBoard() {
+      document.getElementById("scoreBoard").textContent = `คะแนน: ${score} / ${total}`;
+    }
+
+    function nextQuestion() {
+      showQuestion();
+    }
+
+    // เริ่มต้น: สุ่มลำดับคำถามก่อนเล่น
+    shuffleArray(remainingQuestions);
+    showQuestion();
+  </script>
+
+</body>
+</html>
