@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>เกมแก้คำผิด</title>
+  <style>
+    body {
+      font-family: 'Kanit', sans-serif;
+      background-color: #f0f0f0;
+      text-align: center;
+      padding: 30px;
+    }
+    .container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+      width: 600px;
+    }
+    h1 {
+      color: #333;
+    }
+    input {
+      font-size: 18px;
+      padding: 8px;
+      width: 80%;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover {
+      background-color: #27ae60;
+    }
+    #gameArea, #resultArea {
+      display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 8px;
+    }
+    .correct {
+      color: green;
+    }
+    .wrong {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>เกมแก้คำผิด</h1>
+
+    <div id="startArea">
+      <button onclick="startGame()">เริ่มเกม</button>
+    </div>
+
+    <div id="gameArea">
+      <div id="level"></div>
+      <div id="sentence"></div>
+      <input type="text" id="answer" placeholder="พิมพ์คำที่ถูกต้องที่นี่..." onkeydown="if(event.key==='Enter') checkAnswer()">
+      <div id="timer">เวลา: 30</div>
+      <div id="score">คะแนน: 0</div>
+    </div>
+
+    <div id="resultArea">
+      <h2>สรุปผลการเล่น</h2>
+      <div id="finalScore"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>ข้อที่</th>
+            <th>ประโยค</th>
+            <th>คำที่ตอบ</th>
+            <th>คำที่ถูกต้อง</th>
+            <th>ผลลัพธ์</th>
+          </tr>
+        </thead>
+        <tbody id="resultTable"></tbody>
+      </table>
+
+      <!-- ✅ ปุ่มกลับหน้าหลัก -->
+      <button onclick="goToHome()">กลับหน้าหลัก</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      { sentence: "ฉันไปโรงเรีนทุกวัน", correct: "โรงเรียน", level: "ง่าย" },
+      { sentence: "เขากินขาวเช้า", correct: "ข้าว", level: "ง่าย" },
+      { sentence: "แมวกระดดขึ้นโต๊ะ", correct: "กระโดด", level: "ง่าย" },
+      { sentence: "ฉันชอบอ่านนังสือ", correct: "หนังสือ", level: "ง่าย" },
+      { sentence: "เพื่อนฉันอยูบ้น", correct: "บ้าน", level: "ง่าย" },
+      { sentence: "พ่อขับรรถไปทำงาน", correct: "รถ", level: "ง่าย" },
+      { sentence: "แม่ซือผลไม้", correct: "ซื้อ", level: "ง่าย" },
+      { sentence: "วันนี้ฝนตกหนก", correct: "หนัก", level: "ง่าย" },
+      { sentence: "เขานั่งเก้าอี้ไหม่", correct: "ใหม่", level: "ง่าย" },
+      { sentence: "ฉันวิ่งไปรงเรียน", correct: "โรงเรียน", level: "ง่าย" },
+     
+    ];
+
+    let current = 0;
+    let score = 0;
+    let timer = 30;
+    let interval;
+    let userAnswers = [];
+
+    function startGame() {
+      current = 0;
+      score = 0;
+      userAnswers = [];
+
+      document.getElementById("startArea").style.display = "none";
+      document.getElementById("gameArea").style.display = "block";
+      document.getElementById("resultArea").style.display = "none";
+
+      document.getElementById("score").textContent = "คะแนน: 0";
+      startQuestion();
+    }
+
+    function startQuestion() {
+      if (current >= questions.length) {
+        endGame();
+        return;
+      }
+
+      const q = questions[current];
+      document.getElementById("sentence").textContent = q.sentence;
+      document.getElementById("level").textContent = "ระดับ: " + q.level;
+      document.getElementById("answer").value = "";
+      document.getElementById("answer").focus();
+
+      timer = 30;
+      document.getElementById("timer").textContent = "เวลา: " + timer;
+
+      clearInterval(interval);
+      interval = setInterval(() => {
+        timer--;
+        document.getElementById("timer").textContent = "เวลา: " + timer;
+        if (timer === 0) {
+          recordAnswer("");
+          current++;
+          startQuestion();
+        }
+      }, 1000);
+    }
+
+    function checkAnswer() {
+      const userAnswer = document.getElementById("answer").value.trim();
+      recordAnswer(userAnswer);
+      current++;
+      startQuestion();
+    }
+
+    function recordAnswer(userAnswer) {
+      clearInterval(interval);
+      const correctAnswer = questions[current].correct;
+      const isCorrect = userAnswer === correctAnswer;
+      if (isCorrect) score++;
+      userAnswers.push({
+        index: current + 1,
+        sentence: questions[current].sentence,
+        user: userAnswer || "(ไม่มีคำตอบ)",
+        correct: correctAnswer,
+        isCorrect: isCorrect
+      });
+      document.getElementById("score").textContent = "คะแนน: " + score;
+    }
+
+    function endGame() {
+      document.getElementById("gameArea").style.display = "none";
+      document.getElementById("resultArea").style.display = "block";
+      document.getElementById("finalScore").textContent = `คุณได้คะแนน: ${score}/${questions.length}`;
+
+      const table = document.getElementById("resultTable");
+      table.innerHTML = ""; // Clear
+
+      userAnswers.forEach(ans => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${ans.index}</td>
+          <td>${ans.sentence}</td>
+          <td>${ans.user}</td>
+          <td>${ans.correct}</td>
+          <td class="${ans.isCorrect ? 'correct' : 'wrong'}">
+            ${ans.isCorrect ? "✅ ถูกต้อง" : "❌ ผิด"}
+          </td>
+        `;
+        table.appendChild(row);
+      });
+    }
+
+    // ✅ ปุ่มกลับหน้าหลัก
+    function goToHome() {
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
